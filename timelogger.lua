@@ -1,18 +1,19 @@
 local totaltime = 0
 local lasttime = os.clock()
 local filename = ""
+local paused = false
 -- savepath to logfile
 local savepath = os.getenv("APPDATA") .. "\\mpv\\time.txt"
 -- local savepath = "C:\Users\user\AppData\Roaming\mpv\time.txt"
 
-
 -- adds time to totaltime
 function pause_manager(name, value)
     if value == true then
-        totaltime = totaltime + os.clock() - lastttime
+        totaltime = totaltime + os.clock() - lasttime
     else
-        lastttime = os.clock()
+        lasttime = os.clock()
     end
+    paused = value
 end
 
 -- get file name
@@ -34,6 +35,7 @@ end
 
 -- write to file
 function shutdown(event)
+    if not paused then totaltime = totaltime + os.clock() - lasttime end
     if file_exists(savepath) then
         file = io.open(savepath, "a")
         file:write(totaltime .. "s, " .. os.date("%c") .. ", " .. filename, "\n")
@@ -44,12 +46,13 @@ end
 -- gets total time
 function total_time()
     if not file_exists then return nil end
-    
     local total = 0
-    for line in io.lines(savepath)
-        local s1, s2 = string:match(line, "(.?)s,(.*)")
+    for line in io.lines(savepath) do
+        local s1, s2 = string.match(line, "(.*)s,(.*)")
         total = total + s1
     end
+    total = total + totaltime
+    if not paused then total = total + os.clock() - lasttime end
     -- TODO: Transform time in s to days, hours, min, sec
     mp.osd_message("Total time used: " .. total)
 end
