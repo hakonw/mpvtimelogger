@@ -3,6 +3,8 @@ local lasttime = 0
 local timeloaded = ""
 local filename = ""
 local paused = false
+-- set to true to disply in days, hours, min and sec (instead of hours, min, sec)
+local timeformatindays = false
 -- path to logfile
 local logpath = os.getenv("APPDATA") .. "\\mpv\\time.txt"
 -- local logpath = "C:\Users\user\AppData\Roaming\mpv\time.txt"
@@ -49,6 +51,28 @@ function on_file_end(event)
     end
 end
 
+-- helper for time_format returns reduced time, string
+function time_format_helper(time, divider, suffix)
+    if time >= divider then
+        return math.mod(time,divider), (math.floor(time/divider) .. suffix .. " ")
+    end
+    return time, ""
+end
+
+-- transforms the time from s to (days), hours, min, sec
+function time_format(time)
+    local s = ""
+    local start = 1
+    local times = {86400, 3600, 60, 1}
+    local suffixes = {"d", "h", "m", "s"}
+    if not timeformatindays then start = 2 end
+    for i=start,4,1 do
+        time, string = time_format_helper(time, times[i], suffixes[i])
+        s = s .. string
+    end
+    return s
+end
+
 -- displays total time
 function total_time()
     if not file_exists then return nil end
@@ -59,8 +83,7 @@ function total_time()
     end
     total = total + totaltime
     if not paused then total = total + os.clock() - lasttime end
-    -- TODO: Transform time from s to days, hours, min, sec
-    mp.osd_message("Total time used: " .. total)
+    mp.osd_message("Total logged time: " .. time_format(total))
 end
 
 mp.register_event("file-loaded", on_file_load)
