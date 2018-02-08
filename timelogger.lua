@@ -1,22 +1,40 @@
-local totaltime = 0
-local lasttime = 0
-local timeloaded = ""
-local filename = ""
-local paused = false
--- set to true to disply in days, hours, min and sec (instead of hours, min, sec)
-local timeformatindays = false
--- path to logfile
-local logpath = os.getenv("APPDATA") .. "\\mpv\\time.txt"
+-- This script logs total time used in mpv
+-- The default key to display total watch time is "k"
+--
+-- This can be overwritten by editing the last line in this script
+-- Or add the following to your input.conf to change the default keybinding:
+-- KEY script-binding display_total_watch_time
+
+-- To set another path for the logfile, please uncomment one of the linues below
 -- local logpath = "C:\Users\user\AppData\Roaming\mpv\time.txt"
 -- local logpath = "~/.config/mpv/time.txt"
+
+-- Set to true to disply the time in days, hours, min and sec (instead of hours, min, sec)
+local timeformatindays = false
+
+-- Set to true to disable looging of the filename
+local incognito = false
+
+
+-- automaticly sets the logpath
+function detect_logpath()
+    if (logpath ~= nil) or (logpath == "") then return end
+    if os.getenv("APPDATA") ~= nil then
+        logpath = os.getenv("APPDATA") .. "\\mpv\\time.txt" -- for windows
+    else
+        logpath = "~/.config/mpv/time.txt" -- for unix based
+    end
+end
 
 -- gets file name and resets values
 function on_file_load(event)
     totaltime = 0
     lasttime = os.clock()
     timeloaded = os.date("%c")
-    filename = mp.get_property("path")
     paused = mp.get_property_bool("pause")
+    filename = "null"
+    if not incognito then filename = mp.get_property("path") end
+    file_exists(logpath)
 end
 
 -- adds time to totaltime on pause
@@ -33,8 +51,8 @@ end
 function file_exists(path)
     local f, err = io.open(path, "rb")
     if f == nil then
-        msg.error("Error opening file, error:" .. err)
-        print(err)
+        mp.osd_message("timelogger - Error opening file, error: " .. err)
+        mp.msg.error("Error opening file, error: " .. err)
         return false
     end
     f:close()
@@ -86,6 +104,7 @@ function total_time()
     mp.osd_message("Total logged time: " .. time_format(total))
 end
 
+detect_logpath()
 mp.register_event("file-loaded", on_file_load)
 mp.register_event("end-file", on_file_end)
 mp.observe_property("pause", "bool", on_pause_change)
