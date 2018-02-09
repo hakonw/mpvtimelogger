@@ -7,7 +7,7 @@
 
 -- To set another path for the logfile, please uncomment one of the linues below
 -- local logpath = "C:\Users\user\AppData\Roaming\mpv\time.txt"
--- local logpath = "~/.config/mpv/time.txt"
+-- local logpath = "/home/user/.config/mpv/time.txt"
 
 -- Set to true to disply the time in days, hours, min and sec (instead of hours, min, sec)
 local timeformatindays = false
@@ -22,7 +22,7 @@ function detect_logpath()
     if os.getenv("APPDATA") ~= nil then
         logpath = os.getenv("APPDATA") .. "\\mpv\\time.txt" -- for windows
     else
-        logpath = "~/.config/mpv/time.txt" -- for unix based
+        logpath = os.getenv("HOME") .. "/.config/mpv/time.txt" -- for unix based
     end
 end
 
@@ -49,7 +49,7 @@ end
 
 -- checks if there are file problems
 function file_exists(path)
-    local f, err = io.open(path, "rb")
+    local f, err = io.open(path, "a")
     if f == nil then
         mp.osd_message("timelogger - Error opening file, error: " .. err)
         mp.msg.error("Error opening file, error: " .. err)
