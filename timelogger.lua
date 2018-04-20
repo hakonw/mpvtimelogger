@@ -6,8 +6,8 @@
 -- KEY script-binding display_total_watch_time
 
 -- To set another path for the logfile, please uncomment one of the linues below
--- local logpath = "C:\Users\user\AppData\Roaming\mpv\time.txt"
--- local logpath = "/home/user/.config/mpv/time.txt"
+-- local logpath = "C:\Users\user\AppData\Roaming\mpv\time.log"
+-- local logpath = "/home/user/.config/mpv/time.log"
 
 -- Set to true to disply the time in days, hours, min and sec (instead of hours, min, sec)
 local timeformatindays = false
@@ -20,9 +20,9 @@ local incognito = false
 function detect_logpath()
     if (logpath ~= nil) or (logpath == "") then return end
     if os.getenv("APPDATA") ~= nil then
-        logpath = os.getenv("APPDATA") .. "\\mpv\\time.txt" -- for windows
+        logpath = os.getenv("APPDATA") .. "\\mpv\\time.log" -- for windows
     else
-        logpath = os.getenv("HOME") .. "/.config/mpv/time.txt" -- for unix based
+        logpath = os.getenv("HOME") .. "/.config/mpv/time.log" -- for unix based
     end
 end
 
@@ -72,7 +72,7 @@ end
 -- helper for time_format returns reduced time, string
 function time_format_helper(time, divider, suffix)
     if time >= divider then
-        return math.mod(time,divider), (math.floor(time/divider) .. suffix .. " ")
+        return math.mod(time, divider), (math.floor(time / divider) .. suffix .. " ")
     end
     return time, ""
 end
@@ -84,7 +84,7 @@ function time_format(time)
     local times = {86400, 3600, 60, 1}
     local suffixes = {"d", "h", "m", "s"}
     if not timeformatindays then start = 2 end
-    for i=start,4,1 do
+    for i = start, 4, 1 do
         time, string = time_format_helper(time, times[i], suffixes[i])
         s = s .. string
     end
@@ -108,4 +108,4 @@ detect_logpath()
 mp.register_event("file-loaded", on_file_load)
 mp.register_event("end-file", on_file_end)
 mp.observe_property("pause", "bool", on_pause_change)
-mp.add_key_binding("k","display_total_watch_time", total_time)
+mp.add_key_binding("k", "display_total_watch_time", total_time)
