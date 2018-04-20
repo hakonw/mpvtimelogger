@@ -96,7 +96,7 @@ function total_time()
     if not file_exists then return nil end
     local total = 0
     for line in io.lines(logpath) do
-        local s1, s2 = string.match(line, "(.*)s,(.*)")
+        local s1, s2 = string.match(line, "(.-)s,(.*)") -- non-greedy matching in lua is "-"
         total = total + tonumber(s1)
     end
     total = total + totaltime
